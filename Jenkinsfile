@@ -1,17 +1,14 @@
 pipeline {
     agent none
     stages {
-        stage('Build & tests') {
-            agent {
-                docker {
-                    image 'node:10-stretch'
+        docker.image('node:10-stretch').inside {
+            stage('Build & tests') {
+                steps {
+                    echo 'Building..'
+                    sh 'npm install'
+                    echo 'Testing..'
+                    sh 'npm test'
                 }
-            }
-            steps {
-                echo 'Building..'
-                sh 'npm install'
-                echo 'Testing..'
-                sh 'npm test'
             }
         }
         stage('Deploy') {
@@ -19,7 +16,7 @@ pipeline {
                 echo 'Deploying....'
                 script {
                     def customImage = docker.build("node-demo:${env.BUILD_ID}", "./Dockerfile")
-                    customImage.push("master")
+                    //customImage.push("master")
                 }
             }
         }

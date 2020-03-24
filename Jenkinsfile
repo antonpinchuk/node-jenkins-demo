@@ -1,20 +1,25 @@
-node {
-    docker.image('node:10-stretch').inside {
+pipeline {
+    agent none
+    stages {
         stage('Build & tests') {
-            steps {
-                echo 'Building..'
-                sh 'npm install'
-                echo 'Testing..'
-                sh 'npm test'
+            script {
+                docker.image('node:10-stretch').inside {
+                    steps {
+                        echo 'Building..'
+                        sh 'npm install'
+                        echo 'Testing..'
+                        sh 'npm test'
+                    }
+                }
             }
         }
-    }
-    stage('Deploy') {
-        steps {
-            echo 'Deploying....'
-            script {
-                def customImage = docker.build("node-demo:${env.BUILD_ID}", "./Dockerfile")
-                //customImage.push("master")
+        stage('Deploy') {
+            steps {
+                echo 'Deploying....'
+                script {
+                    def customImage = docker.build("node-demo:${env.BUILD_ID}", "./Dockerfile")
+                    //customImage.push("master")
+                }
             }
         }
     }

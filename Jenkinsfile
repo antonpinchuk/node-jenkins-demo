@@ -1,7 +1,7 @@
 pipeline {
     agent any
     stages {
-        stage('Build & tests') {
+        stage('Tests') {
             steps {
                 //script {
                 //    docker.image('node:10-stretch').inside {
@@ -13,12 +13,13 @@ pipeline {
                 //}
             }
         }
-        stage('Deploy') {
+        stage('Build and push docker image') {
             steps {
-                echo 'Deploying....'
                 script {
-                    def customImage = docker.build("node-demo:master")
-                    //customImage.push("master")
+                    def dockerImage = docker.build("antonml/node-demo:master")
+                    docker.withRegistry('', 'demo-docker') {
+                        dockerImage.push('master')
+                    }
                 }
             }
         }

@@ -1,11 +1,10 @@
 # CI/CD NodeJS, Jenkins and Docker Setup Tutorial
 
 ## Overview
-Below stuff took me 2 days to complete, just because I was new to Jenkins and stuck with a couple of basic configuration things. 
+
+Below stuff took me 2 days to complete, just because I was new to Jenkins and stuck with a couple of basic configuration things (hope this article will help you to save your time). 
 
 This tutorial is tight, requires understanding of DevOps fundamentals, plz refer to corresponding documentation for more details.
-
-Hope it will save your time. 
 
 ## Challenge
 This tech challenge is composed of three parts: development, container creation and CI/CD.
@@ -16,13 +15,13 @@ This tech challenge is composed of three parts: development, container creation 
 
 ## Jenkins
 
-I installed it on MacOS using [homebrew](http://brew.sh). _I also played with running it as docker container. A challenge part here is that our pipeline will require executing docker build, that cause docker in docker, which is possible, but tricky (see below)._ 
+I installed it on MacOS using [homebrew](http://brew.sh). _I also played with running it as a Docker container. A challenge part here was that my pipeline runs docker build, that cause 'docker in docker', which is possible, but tricky (see below)._ 
 
 In real life you most likely run Jenkins on VPS or private server with Ubuntu/Debian where configuration is pretty similar to what I've done here.  
 
-Because I need github to access my local jenkins from outside I set up [ngrok](https://ngrok.com/), which is pretty easy, installed it with homebrew as well.
+Because I need github to access my local jenkins from outside I've set up [ngrok](https://ngrok.com/), which was pretty easy to do, I installed it with homebrew as well.
 
-Run & configure Jenkins (Wizard), uncheck unnecessary plugins (like gradle) and add required ones:
+Run & configure Jenkins (Wizard), uncheck unnecessary plugins (like gradle) and check whatever required for my task:
 * Git
 * Credentials
 * NodeJS
@@ -34,16 +33,16 @@ Generate and setup git ssh credentials, so your machine able to access the repo:
 
 ![jenkins pipeline git repo attached](doc/images/image4.png)
 
-Setup webhook on github to call your jenkins endpoint
+Setup webhook on github to call your jenkins endpoint, like this
 
 ![Jenkins GitHub webhook](doc/images/image3.png)
 
 #### Configure PATH's 
-Use Jenkins global environment settings (e.g. to enable npm, docker etc). Put here everything that you need to run SSH commands in your pipeline (if it does not work from the box).
+Use Jenkins global environment settings (e.g. to access enable npm, docker etc). Put here everything that you need to run SSH commands in your pipeline (if it does not work from the box).
 
 ![Jenkins PATH and environment](doc/images/image1.png)
 
-But this was not enough. Jenkins plugins, like [docker](https://plugins.jenkins.io/docker-plugin/), do execute system commands right from Java runtime and do not use Jenkins agents / global settings! So to make it work extra PATH configuration of Jenkins runtime was needed in my case. On MacOS there is .plist config I amended:
+But this was not enough. Jenkins plugins, such as [docker](https://plugins.jenkins.io/docker-plugin/), do execute system commands right from Java runtime and do not use Jenkins agents / global settings! So in my case some extra PATH configuration to Jenkins runtime was needed to make it work. On MacOS there is .plist config I amended (.json on linux):
 ~~~
     <key>EnvironmentVariables</key>
     <dict>
@@ -52,13 +51,13 @@ But this was not enough. Jenkins plugins, like [docker](https://plugins.jenkins.
     </dict>
 ~~~ 
 
-## Jenkins job
+## Jenkins pipeline
 
-Create pipeline job.
+Create a new pipeline job.
 
-Check “hook trigger for Scm”, add repository url (with ssh credentials) and “master” branch to trigger.
+Check “hook trigger for Scm”, add repository url (with ssh credentials or token) and specify  “master” branch to trigger.
 
-Create [Jenkinsfile](https://github.com/antonpinchuk/node-jenkins-demo/blob/master/Jenkinsfile) pipeline with build/tests stage:
+Create [Jenkinsfile](https://github.com/antonpinchuk/node-jenkins-demo/blob/master/Jenkinsfile) pipeline with a build/testing stage:
 ~~~
             steps {
                 echo 'Building..'
@@ -76,7 +75,7 @@ Use node docker image agent for build and tests:
                 }
             }
 ~~~
-or you can run your script inside docker container:
+or you can run your shell commands inside the docker container:
 ~~~
                 script {
                    docker.image('node:10-stretch').inside { c ->
@@ -104,7 +103,7 @@ Add build stage to your pipeline:
 ~~~
 
 ## Push docker image
-Create Jenkins credentials for your docker hub registry, with type username/password, where id is `docker-demo`.
+Create Jenkins credentials for your docker hub registry, with type username/password, where id is `docker-demo` instead.
 
 Add build stage:
 ~~~
@@ -139,14 +138,14 @@ Add build stage:
 
 Connecting to remote docker host (in my case docker host on my local machine). I used pure docker commands, because Docker plugin’s functionality is limited to implement this. If I have more time I would try [docker-build-step](https://plugins.jenkins.io/docker-build-step/).
 
-This solution is not typical for production systems. In the real world in large projects images are being delivered to kubernetes, docker swarm, elastic beanstalk or other cloud platforms like digitalocean or heroku. For smaller projects hosted by VPS you may not needed docker, just upload application artifacts directly via SSH (see article below).
+This solution is not typical for production systems. In large projects of real world images are being delivered to kubernetes, docker swarm, elastic beanstalk or other cloud platforms like digitalocean or heroku. For smaller projects hosted by VPS you may not needed docker, just upload application artifacts directly via SSH (see article below).
 
-## Build screenshots
+## Result (screenshots)
 ![Successful Jenkins build](doc/images/image2.png)
 
 ![Jenkins build log](doc/images/image6.png)
 
-Run deployed project from container
+Run deployed project from the container
  
 ![Demo node endpoint](doc/images/image5.png)
 
@@ -154,13 +153,14 @@ Run deployed project from container
 
 #### Install Jenkins in a docker container
 
-This tech challenge is supposed to wrap a node app in docker image. I need NPM and Docker working on my Jenkins. There are 3 ways to get it working in docker container. 
-- Bind and use the tool from host machine (I get error checking docker license)
-- Install the tool separately inside the container (some people do it, some do not recommend)
-- Run the tool (node) in docker image as agent, I need docker working for this
-[Discussion thread](https://forums.docker.com/t/docker-not-found-in-jenkins-pipeline/31683/16)
+This tech challenge is supposed to wrap a node app in a docker image. I needed NPM and Docker working with my Jenkins. There are 3 ways to get it working in docker container. 
+- Bind the tool from host machine (I tried, but got an error checking docker license)
+- Install the tool separately from package inside the container (some people do it, some do not recommend)
+- Run the tool (node) in a docker image as an agent, I needed working docker for this, I didn't ((
 
-I tried to use both blueocean image from docker.io and lts image from github
+[See discussion thread](https://forums.docker.com/t/docker-not-found-in-jenkins-pipeline/31683/16)
+
+I tried to use both blueocean image from docker.io and [LTS](https://github.com/jenkinsci/docker/blob/master/README.md) image from github
 ~~~
 docker network
 docker volume create jenkins-docker-certs
@@ -179,7 +179,7 @@ docker container run \
                    --volume jenkins-docker-certs:/certs/client:ro \
                    jenkins/jenkins:lts
 ~~~
-Useful options (trying to run host docker inside docker container)
+Trying to run host docker inside docker container mounting executable
 ~~~
                    --volume $(which docker):/usr/bin/docker \
                    --volume /var/run/docker.sock:/var/run/docker.sock \

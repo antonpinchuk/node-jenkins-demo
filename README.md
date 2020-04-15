@@ -30,18 +30,18 @@ Run & configure Jenkins (Wizard), uncheck unnecessary plugins (like gradle) and 
 
 Generate and setup git ssh credentials, so your machine able to access the repo:
 
-![git ssh credentials](https://lh4.googleusercontent.com/XsqgyG_Bd8I0SUGiqSnstlmYbMUM_6RcgADiEZJHUpGB5OW8cQQBncj72UN3lvqqnEK9nS3XbYX_cA_CP3ZM=w2880-h1596-rw)
+![git ssh credentials](doc/images/image7.png)
 
-![jenkins pipeline git repo attached](https://lh5.googleusercontent.com/m7LPK7YY-usCJfcepf01AT7RDIUUV9pCIfCwIe8JsqFikz3bGRW8-UuFCRGl-GDzZJy6S8XyCp0CnYlP7z56=w2880-h1596-rw)
+![jenkins pipeline git repo attached](doc/images/image4.png)
 
 Setup webhook on github to call your jenkins endpoint
 
-![Jenkins GitHub webhook](https://lh5.googleusercontent.com/pJxZwHzig7uoURO4RGm4nLBFEhKSkLDBDa0vobb_eOGLoDN04bf4g2Tngp8xZUmmx1MTGDElPTNHhxymG9Iv=w2880-h1596-rw)
+![Jenkins GitHub webhook](doc/images/image3.png)
 
 #### Configure PATH's 
 Use Jenkins global environment settings (e.g. to enable npm, docker etc). Put here everything that you need to run SSH commands in your pipeline (if it does not work from the box).
 
-![Jenkins PATH and environment](https://lh3.googleusercontent.com/9htFgB19eQzEoH42kJ2iVDVvt6nxL3TBB5rUP-YWf1K8M2MKSKFN2wNMhDPdqBJVAPW1Ix4c7ir1apkRwVpU=w2880-h1596-rw)
+![Jenkins PATH and environment](doc/images/image1.png)
 
 But this was not enough. Jenkins plugins, like [docker](https://plugins.jenkins.io/docker-plugin/), do execute system commands right from Java runtime and do not use Jenkins agents / global settings! So to make it work extra PATH configuration of Jenkins runtime was needed in my case. On MacOS there is .plist config I amended:
 ~~~
@@ -142,13 +142,13 @@ Connecting to remote docker host (in my case docker host on my local machine). I
 This solution is not typical for production systems. In the real world in large projects images are being delivered to kubernetes, docker swarm, elastic beanstalk or other cloud platforms like digitalocean or heroku. For smaller projects hosted by VPS you may not needed docker, just upload application artifacts directly via SSH (see article below).
 
 ## Build screenshots
-![Successful Jenkins build](https://lh4.googleusercontent.com/FKYWNnBqT1B-tp_OjOHuBnt4ms4nQPRap8RejqUWb8jpxPz_fEAItul8bQFdrPgoNCUvJRrABuH04DbYCCxi=w2880-h1596-rw)
+![Successful Jenkins build](doc/images/image2.png)
 
-![Jenkins build log](https://lh4.googleusercontent.com/f71K2N_IXLLvW_2Z57I2nJPpeAXcIEypzwqeRrhihka7d0uof0oH6_NaiQY36kMaUXPTmpfVncszFDqhKWiO=w2880-h1596-rw)
+![Jenkins build log](doc/images/image6.png)
 
 Run deployed project from container
  
-![Demo node endpoint](https://lh6.googleusercontent.com/WX0s2ASYeLRFi4_SkxlM3QVhQIcScIO6V_OCL9THSAE7POazEWgwoKN8uu6t3psciept7nbRllNRPkt68uVd=w2880-h1596-rw)
+![Demo node endpoint](doc/images/image5.png)
 
 ## Technical issues (stoppers)
 
